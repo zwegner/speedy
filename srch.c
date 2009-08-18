@@ -2,13 +2,12 @@
 
 #include "speedy.h"
 #include "bb.h"
-#include "clr.h"
-#include "mv.h"
+#include "chess.h"
 
 int alpha_beta(int alpha, int beta, int depth, int ply)
 {
-	struct atk_set_t atk[1];
-	struct mv_slct_t slct[1];
+	atk_set_t atk[1];
+	mv_slct_t slct[1];
 	int s, lgl_mvs;
 
 	/* Init. */

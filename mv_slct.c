@@ -4,7 +4,7 @@
  * at the expense of some code size, we implement it as a seperate file
  * with a function defined as a macro before each inclusion. This generates
  * moves as a finite state machine. It basically works like Ken Thompson's
- * Belle in bitboards, but more complex. Since we don't want to deal with
+ * Belle in bitboards, but more complex. We don't want to deal with
  * maintaining the state of the generator in between calls, which besides
  * being messy also requires some extra calculations. So we call the
  * "child" functions directly from the move selector. But since we want to
@@ -69,25 +69,29 @@
 	sq_t atkr_sq;
 	bb_t atks[PC_COUNT];
 
-	/* Try hash move. */
-	if (mv_is_pseudo(slct->hash_mv))
-		MV_SLCT_FN(slct->hash_mv);
+	mv_t mv;
 
-	stm = board.stm;
-	sntm = FLIP_COLOR(board.stm);
+	/* Try hash move. */
+	mv = slct->hash_mv
+	if (mv_is_pseudo(mv))
+		MV_SLCT_FN(mv);
+
+	stm = brd->stm;
+	sntm = FLP_CLR(brd->stm);
 
 	/* Loop through victims in reverse order. This should be unrolled! */
-	for (vctm_pc = QUEEN; vctm_pc >= PAWN; vctm_pc--) {
-		vctm_bb = board.piece_bb[sntm][vctm_pc];
+	for (vctm_pc = PC_Q; vctm_pc >= PC_P; vctm_pc--) {
+		vctm_bb = brd->piece_bb[sntm][vctm_pc];
 
 		/* Find pawn captures first. We can do this setwise, and we don't
 		 * need SEE. */
-		atkr_bb = board.piece_bb[stm][PAWN] & atks[PAWN];
+		atkr_bb = brd->piece_bb[stm][PC_P] & atks[PC_P];
 
 		/* Loop through all pawn attacks, one direction at a time. */
 		FOR_SQ_IN_BB(vctm_sq, CSH_DL(stm, vctm_bb) & atkr_bb) {
 			atkr_sq = sq_ur[stm][vctm_sq];
-			MV_SLCT_FN(MV_FROM_FT(atkr_sq, vctm_sq));
+			mv = MV_FROM_FTMCP(atkr_sq, vctm_sq, );
+			MV_SLCT_FN(mv);
 		}
 		FOR_SQ_IN_BB(vctm_sq, CSH_DR(stm, vctm_bb) & atkr_bb) {
 			atkr_sq = sq_ul[stm][vctm_sq];
@@ -97,54 +101,59 @@
 		/* Find all the squares that the victim piece type is on. */
 		FOR_SQ_IN_BB(vctm_sq, vctm_bb) {
 			/* eh, waste of time, whatever. */
-			atks[PAWN] = atk_bb_pre[vctm_sq][ATK_PRE_P(stm)];
+			atks[PC_P] = atk_bb_pre[vctm_sq][ATK_PRE_P(stm)];
 
 			/* Knight attacks. */
-			atks[KNIGHT] = atk_bb_pre[vctm_sq][ATK_PRE_N];
-			atkr_bb = board.piece_bb[stm][KNIGHT] & atks[KNIGHT];
+			atks[PC_N] = atk_bb_pre[vctm_sq][ATK_PRE_N];
+			atkr_bb = brd->piece_bb[stm][PC_N] & atks[PC_N];
 
-			CAP_LOOP(KNIGHT);
+			CAP_LOOP(PC_N);
 
 			/* Bishop attacks by direction. */
 			bb_t b_atk = atk_bb_pre[vctm_sq][ATK_PRE_B];
 
-			atkr_bb = b_atk & board.piece_bb[stm][BISHOP];
-			SLDR_CAP_LOOP(BISHOP);
+			atkr_bb = b_atk & brd->piece_bb[stm][PC_B];
+			SLDR_CAP_LOOP(PC_B);
 
 			/* Rook attacks by direction. */
 			bb_t r_atk = atk_bb_pre[vctm_sq][ATK_PRE_R];
 
-			atkr_bb = r_atk & board.piece_bb[stm][ROOK];
-			SLDR_CAP_LOOP(ROOK);
+			atkr_bb = r_atk & brd->piece_bb[stm][PC_R];
+			SLDR_CAP_LOOP(PC_R);
 
 			/* Queen attacks by direction. */
 			bb_t q_atk = b_atk | r_atk;
 
-			atkr_bb = q_atk & board.piece_bb[stm][QUEEN];
-			SLDR_CAP_LOOP(QUEEN);
+			atkr_bb = q_atk & brd->piece_bb[stm][PC_Q];
+			SLDR_CAP_LOOP(PC_Q);
 
 			/* King attacks. */
-			if (vctm_pc != KING) {
-				atks[KING] = atk_bb_pre[vctm_sq][ATK_PRE_K];
-				atkr_bb = board.piece_bb[stm][KING] & atks[KING];
+			if (vctm_pc != PC_K) {
+				atks[PC_K] = atk_bb_pre[vctm_sq][ATK_PRE_K];
+				atkr_bb = brd->piece_bb[stm][PC_K] & atks[PC_K];
 
-				CAP_LOOP(KING);
+				CAP_LOOP(PC_K);
 			}
 		}
 	}
 
 	/* Non-quiescence part: killers, bad captures, and noncaptures */
 #ifndef IS_QUIESCE
+
 	/* Try killer moves. */
-	for (i = 0; i < KILLER_COUNT; i++) {
-		if (mv_is_pseudo(slct->kllr_mv[i]))
-			MV_SLCT_FN(slct->kllr_mv[i]);
+	for (i = 0; i < KILLER_CT; i++) {
+		mv = slct->kllr_mv[i];
+		if (mv_is_pseudo(mv))
+			MV_SLCT_FN(mv);
 	}
+
 	/* Try bad captures. */
 
 	/* Generate attacks for noncaptures. */
 	atk_set_gen(atks, stm);
 
 	/* Try non captures in basically random order. */
+	/* XXX priority bitscan? */
+
 #endif
 }

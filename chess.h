@@ -1,13 +1,24 @@
-/* mv.h */
+/* chess.h */
 
-#ifndef _MV_H_
-#define _MV_H_
+#ifndef _CHESS_H_
+#define _CHESS_H_
 
 #include "speedy.h"
 #include "bb.h"
 
-typedef unsigned int mv_t;
-typedef unsigned char cstl_t;
+/* Colors */
+
+typedef s32_t clr_t;
+enum { CLR_W, CLR_B };
+
+/* Pieces */
+
+typedef s32_t pc_t;
+enum { PC_P, PC_N, PC_B, PC_R, PC_Q, PC_K };
+
+/* Moves */
+
+typedef u32_t mv_t;
 
 /*
  * Move structure:
@@ -25,5 +36,28 @@ typedef unsigned char cstl_t;
 #define MV_GET_M(mv)				(mv>>12&7)
 #define MV_GET_C(mv)				(mv>>15&7)
 #define MV_GET_P(mv)				(mv>>18)
+
+/* Castling Rights */
+
+typedef u8_t cstl_t;
+
+#define CSTL_
+
+/* Board */
+
+typedef struct
+{
+	bb_t pc_bb[6];
+	bb_t clr_bb[2];
+	clr_t stm;
+	bb_t ep;
+	cstl_t cstl;
+} brd_t;
+
+/* Prototypes */
+
+
+/* Data */
+
 
 #endif
