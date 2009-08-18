@@ -1,3 +1,8 @@
-/* color.h */
+/* clr.h */
 
-enum color_t { WHITE, BLACK };
+#ifndef _CLR_H_
+#define _CLR_H_
+
+enum clr_t { WHITE, BLACK };
+
+#endif

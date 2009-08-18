@@ -1,12 +1,18 @@
+/* srch.c */
+
+#include "speedy.h"
+#include "bb.h"
+#include "clr.h"
+#include "mv.h"
+
 int alpha_beta(int alpha, int beta, int depth, int ply)
 {
 	struct atk_set_t atk[1];
 	struct mv_slct_t slct[1];
-	int best_score, score, legal_mvs;
+	int s, lgl_mvs;
 
 	/* Init. */
-	best_score = -VALUE_INF;
-	legal_mvs = 0;
+	lgl_mvs = 0;
 
 	/* Probe hash. */
 
@@ -17,25 +23,24 @@ int alpha_beta(int alpha, int beta, int depth, int ply)
 	/* Move loop. */
 #define MV_SLCT_FN(mv) \
 	do { \
-		if (mv_make(mv)) { \
-			legal_mvs++; \
+		if (mv_mk(mv)) { \
+			lgl_mvs++; \
 			if (depth>0) {\
-				if (legal_mvs>1) score = alpha_beta(-alpha-1, -alpha, depth-1, \
+				if (lgl_mvs>1) s = alpha_beta(-alpha-1, -alpha, depth-1, \
 						ply+1); \
-				else score = alpha_beta(-beta, -alpha, depth-1, ply+1); \
-			} else score = quiesce(-beta, -alpha, ply+1); \
-			mv_unmake(); \
-			if (score > best_score) best_score = score; \
-			if (score > alpha) alpha = score; \
-			if (score >= beta) goto cut; \
+				else s = alpha_beta(-beta, -alpha, depth-1, ply+1); \
+			} else s = quiesce(-beta, -alpha, ply+1); \
+			mv_unmk(); \
+			if (s > alpha) alpha = s; \
+			if (s >= beta) goto cut; \
 		} \
 	} while (0);
 
-#include "move_selector.c"
+#include "mv_slct.c"
 
 cut:
 
 	/* Store in hash. */
 
-	return best_score;
+	return alpha;
 }
