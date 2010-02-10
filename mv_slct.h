@@ -10,10 +10,11 @@
 
 typedef struct
 {
+	mv_t hash_mv;
+	mv_t kllr_mv[KILLER_CT];
+
 	mv_t bad_caps[256];
 	u8_t bad_cap_ct;
-
-	mv_t kllr_mv[KILLER_CT];
 } mv_slct_t;
 
 #endif

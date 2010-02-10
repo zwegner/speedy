@@ -37,7 +37,7 @@ int search(bb_t mul)
 
 	do
 	{
-		r = (mul * s) >> 59 & 63; // r = magic idx
+		r = (mul * s) >> 58; // r = magic idx
 		c = castle_mask(s); // c = castling rights
 
 		//printf("%#018llx = %i [%i]\n",s,c,r);
