@@ -50,8 +50,10 @@ int search(bb_t mul)
 
 		idx[r] = c;
 
+		if (s && !(s & s-1) && r & r-1)
+			return 0;
+
 		s = (s - castle) & castle;
-		//printf("%#018llx - %i\n",castle);
 	} while (s);
 
 	// good
@@ -68,6 +70,26 @@ done:
 
 	//getchar();
 	return ret;
+}
+
+void print(bb_t mul)
+{
+	bb_t s = 0;
+	int i, r;
+
+	do
+	{
+		r = (mul * s) >> 58; // r = magic idx
+
+		//if (s == 0x91 || s == 0x91ull<<56) {
+		if (s && !(s & s-1)) {
+			printf("%#018llx: %2i=", s,r);
+			for (i = 0; i < 6; i++)
+				printf("%i",(r>>i)&1);
+			printf("\n");
+		}
+		s = (s - castle) & castle;
+	} while (s);
 }
 
 bb_t random_bb_t() {
@@ -121,9 +143,13 @@ int main(void)
 		do
 		{
 			i = search(x);
-			if (i && i < best)
+			if (i && i <= best)
 			{
 				printf("%#018llx = %i\n",x,i);
+				printf("\n");
+				print(x);
+				printf("\n");
+				getchar();
 				best = i;
 			}
 			x = snoob(x);

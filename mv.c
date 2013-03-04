@@ -67,6 +67,22 @@ void mv_bb_mk(brd_t *old_brd, brd_t *brd, int pc_mv, int pc_cap,
 	brd->stm = sntm;
 }
 
+inline void mv_mk_switch()
+{
+	switch ()
+	{
+		case WP:
+			child->pawns = board->pawns ^ from ^ to;
+			child->white = board->white ^ from ^ to;
+			// copy rest
+		case WP_BP:
+			child->pawns = board->pawns ^ from;
+			child->white = board->white ^ from;
+			child->black = board->black ^ to;
+			// copy rest
+	}
+}
+
 bool_t mv_is_pseudo(brd_t *brd, mv_t mv)
 {
 	return BOOL_T;
